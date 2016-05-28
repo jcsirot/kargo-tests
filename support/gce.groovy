@@ -10,7 +10,7 @@ def run(username, credentials_id, project_id, service_account_email, gce_pem_id,
                     //test_create_pod(inventory_path, credentialsId)
                     //test_network(inventory_path, credentialsId)
                 } finally {
-                  delete_vm(run_id, project_id, service_account_email, gce_pem_id)
+                    delete_vm(run_id, project_id, service_account_email, gce_pem_id)
                 }
             }
         }
@@ -20,7 +20,7 @@ def run(username, credentials_id, project_id, service_account_email, gce_pem_id,
 def create_vm(run_id, project_id, service_account_email, gce_pem_id, image) {
     stage 'Provision'
     withCredentials([[$class: 'FileBinding', credentialsId: gce_pem_id, variable: 'GCE_PEM']]) {
-        sh "kargo gce -y --pem_file ${env.GCE_PEM} --email \"${service_account_email}\" --zone us-central1-a --type \"n1-standard-1\" --image \"${image}\" --project ${project_id} --instances 3"
+        sh "kargo gce -y --path kargo --pem_file ${env.GCE_PEM} --email \"${service_account_email}\" --zone us-central1-a --type \"n1-standard-1\" --image \"${image}\" --project ${project_id} --instances 3"
     }
 }
 
@@ -43,7 +43,7 @@ def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
 def install_cluster(username, credentials_id, network_plugin) {
   stage 'Deploy'
   withCredentials([[$class: 'FileBinding', credentialsId: credentials_id, variable: 'SSH_KEY']]) {
-    sh "kargo deploy -y --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY}"
+    sh "kargo deploy -y --path kargo --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY}"
   }
 }
 
