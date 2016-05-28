@@ -10,7 +10,7 @@ def run(username, credentials_id, project_id, service_account_email, gce_pem_id,
                     //test_create_pod(inventory_path, credentialsId)
                     //test_network(inventory_path, credentialsId)
                 } finally {
-                    delete_vm(run_id, inventory_path, image, credentialsId)
+                  delete_vm(run_id, project_id, service_account_email, gce_pem_id)
                 }
             }
         }
