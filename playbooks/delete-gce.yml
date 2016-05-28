@@ -8,7 +8,7 @@
     - name: delete gce instances
       local_action:
         module: gce
-        instance_names: "{{ inventory_hostname }}"
+        name: "{{ inventory_hostname }}"
         service_account_email: "{{ gce_service_account_email }}"
         pem_file: "{{ gce_pem_file }}"
         project_id: "{{ gce_project_id }}"
