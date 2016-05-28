@@ -1,17 +1,15 @@
 def run(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin) {
-    node {
-        def run_id = "${env.JOB_NAME}-${env.BUILD_NUMBER}"
-        wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
-            withEnv(['PYTHONUNBUFFERED=1']) {
-                try {
-                    create_vm(run_id, project_id, service_account_email, gce_pem_id, image)
-                    install_cluster(username, credentials_id, network_plugin)
-                    //test_apiserver(inventory_path, credentialsId)
-                    //test_create_pod(inventory_path, credentialsId)
-                    //test_network(inventory_path, credentialsId)
-                } finally {
-                    delete_vm(run_id, project_id, service_account_email, gce_pem_id)
-                }
+    def run_id = "${env.JOB_NAME}-${env.BUILD_NUMBER}"
+    wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
+        withEnv(['PYTHONUNBUFFERED=1']) {
+            try {
+                create_vm(run_id, project_id, service_account_email, gce_pem_id, image)
+                install_cluster(username, credentials_id, network_plugin)
+                //test_apiserver(inventory_path, credentialsId)
+                //test_create_pod(inventory_path, credentialsId)
+                //test_network(inventory_path, credentialsId)
+            } finally {
+                delete_vm(run_id, project_id, service_account_email, gce_pem_id)
             }
         }
     }
