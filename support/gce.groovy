@@ -1,7 +1,5 @@
 def run(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin) {
     node {
-        git 
-
         def run_id = "${env.JOB_NAME}-${env.BUILD_NUMBER}"
         wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
             withEnv(['PYTHONUNBUFFERED=1']) {
