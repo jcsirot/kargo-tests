@@ -5,9 +5,7 @@ def run(username, credentials_id, project_id, service_account_email, gce_pem_id,
             try {
                 create_vm(run_id, project_id, service_account_email, gce_pem_id, image)
                 install_cluster(username, credentials_id, network_plugin)
-                //test_apiserver(inventory_path, credentialsId)
-                //test_create_pod(inventory_path, credentialsId)
-                //test_network(inventory_path, credentialsId)
+                run_tests(credentials_id)
             } finally {
                 delete_vm(run_id, project_id, service_account_email, gce_pem_id)
             }
@@ -38,6 +36,13 @@ def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
     }
 }
 
+def run_tests(credentials_id) {
+  stage 'Test'
+  test_apiserver(credentials_id)
+  //test_create_pod(inventory_path, credentialsId)
+  //test_network(inventory_path, credentialsId)
+}
+
 def install_cluster(username, credentials_id, network_plugin) {
   stage 'Deploy'
   withCredentials([[$class: 'FileBinding', credentialsId: credentials_id, variable: 'SSH_KEY']]) {
@@ -45,31 +50,31 @@ def install_cluster(username, credentials_id, network_plugin) {
   }
 }
 
-def test_apiserver(inventory_path, credentialsId) {
+def test_apiserver(credentials_id) {
     ansiblePlaybook(
-        inventory: inventory_path,
+        inventory: 'kargo/inventory/inventory.cfg',
         playbook: 'testcases/010_check-apiserver.yml',
-        credentialsId: credentialsId,
+        credentialsId: credentials_id,
         colorized: true
     )
 }
 
-def test_create_pod(inventory_path, credentialsId) {
+def test_create_pod(credentials_id) {
     ansiblePlaybook(
-        inventory: inventory_path,
+        inventory: 'kargo/inventory/inventory.cfg',
         playbook: 'testcases/020_check-create-pod.yml',
         sudo: true,
-        credentialsId: credentialsId,
+        credentialsId: credentials_id,
         colorized: true
     )
 }
 
-def test_network(inventory_path, credentialsId) {
+def test_network(credentials_id) {
     ansiblePlaybook(
-        inventory: inventory_path,
+        inventory: 'kargo/inventory/inventory.cfg',
         playbook: 'testcases/030_check-network.yml',
         sudo: true,
-        credentialsId: credentialsId,
+        credentialsId: credentials_id,
         colorized: true
     )
 }
