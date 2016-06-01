@@ -39,8 +39,8 @@ def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
 def run_tests(credentials_id) {
   stage 'Test'
   test_apiserver(credentials_id)
-  //test_create_pod(inventory_path, credentialsId)
-  //test_network(inventory_path, credentialsId)
+  test_create_pod(credentials_id)
+  test_network(credentials_id)
 }
 
 def install_cluster(username, credentials_id, network_plugin) {
