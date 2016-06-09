@@ -1,4 +1,8 @@
-def run(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin) {
+def run_coreos(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin) {
+    run(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin, true)
+}
+
+def run(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin, coreos=false) {
     def run_id = "${env.JOB_NAME}-${env.BUILD_NUMBER}"
     wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
         withEnv(['PYTHONUNBUFFERED=1']) {
@@ -43,9 +47,12 @@ def run_tests(credentials_id) {
   test_network(credentials_id)
 }
 
-def install_cluster(username, credentials_id, network_plugin) {
+def install_cluster(username, credentials_id, network_plugin, coreos = false) {
   stage 'Deploy'
   withCredentials([[$class: 'FileBinding', credentialsId: credentials_id, variable: 'SSH_KEY']]) {
+    if (coreos) {
+      sh "kargo deploy -y --path kargo --gce --coreos -u ${username} -k ${env.SSH_KEY}"
+    }
     sh "kargo deploy -y --path kargo --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY}"
   }
 }
