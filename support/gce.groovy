@@ -49,11 +49,9 @@ def run_tests(credentials_id) {
 
 def install_cluster(username, credentials_id, network_plugin, coreos=false) {
   stage 'Deploy'
+  coreosArg = coreos ? "--coreos" : ""
   withCredentials([[$class: 'FileBinding', credentialsId: credentials_id, variable: 'SSH_KEY']]) {
-    if (coreos) {
-      sh "kargo deploy -y --path kargo --gce --coreos -u ${username} -k ${env.SSH_KEY}"
-    }
-    sh "kargo deploy -y --path kargo --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY}"
+    sh "kargo deploy -y --path kargo ${coreosArg} --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY}"
   }
 }
 
