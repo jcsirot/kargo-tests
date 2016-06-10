@@ -8,7 +8,7 @@ def run(username, credentials_id, project_id, service_account_email, gce_pem_id,
         withEnv(['PYTHONUNBUFFERED=1']) {
             try {
                 create_vm(run_id, project_id, service_account_email, gce_pem_id, image)
-                install_cluster(username, credentials_id, network_plugin)
+                install_cluster(username, credentials_id, network_plugin, coreos)
                 run_tests(credentials_id)
             } finally {
                 delete_vm(run_id, project_id, service_account_email, gce_pem_id)
@@ -47,7 +47,7 @@ def run_tests(credentials_id) {
   test_network(credentials_id)
 }
 
-def install_cluster(username, credentials_id, network_plugin, coreos = false) {
+def install_cluster(username, credentials_id, network_plugin, coreos=false) {
   stage 'Deploy'
   withCredentials([[$class: 'FileBinding', credentialsId: credentials_id, variable: 'SSH_KEY']]) {
     if (coreos) {
