@@ -42,7 +42,7 @@ def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
 
 def run_tests(credentials_id, coreos=false) {
   stage 'Test'
-  vars = []
+  vars = [:]
   if (coreos) {
     vars = [
       ansible_python_interpreter: "/opt/bin/python"
