@@ -9,7 +9,7 @@ def run(username, credentials_id, project_id, service_account_email, gce_pem_id,
             try {
                 create_vm(run_id, project_id, service_account_email, gce_pem_id, image)
                 install_cluster(username, credentials_id, network_plugin, coreos)
-                run_tests(credentials_id)
+                run_tests(credentials_id, coreos)
             } finally {
                 delete_vm(run_id, project_id, service_account_email, gce_pem_id)
             }
@@ -40,11 +40,17 @@ def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
     }
 }
 
-def run_tests(credentials_id) {
+def run_tests(credentials_id, coreos=false) {
   stage 'Test'
-  test_apiserver(credentials_id)
-  test_create_pod(credentials_id)
-  test_network(credentials_id)
+  vars = []
+  if (coreos) {
+    vars = [
+      ansible_python_interpreter: "/opt/bin/python"
+    ]
+  }
+  test_apiserver(credentials_id, vars)
+  test_create_pod(credentials_id, vars)
+  test_network(credentials_id, vars)
 }
 
 def install_cluster(username, credentials_id, network_plugin, coreos=false) {
@@ -55,32 +61,35 @@ def install_cluster(username, credentials_id, network_plugin, coreos=false) {
   }
 }
 
-def test_apiserver(credentials_id) {
+def test_apiserver(credentials_id, vars) {
     ansiblePlaybook(
         inventory: 'kargo/inventory/inventory.cfg',
         playbook: 'testcases/010_check-apiserver.yml',
         credentialsId: credentials_id,
-        colorized: true
+        colorized: true,
+        extraVars: vars
     )
 }
 
-def test_create_pod(credentials_id) {
+def test_create_pod(credentials_id, vars) {
     ansiblePlaybook(
         inventory: 'kargo/inventory/inventory.cfg',
         playbook: 'testcases/020_check-create-pod.yml',
         sudo: true,
         credentialsId: credentials_id,
-        colorized: true
+        colorized: true,
+        extraVars: vars
     )
 }
 
-def test_network(credentials_id) {
+def test_network(credentials_id, vars) {
     ansiblePlaybook(
         inventory: 'kargo/inventory/inventory.cfg',
         playbook: 'testcases/030_check-network.yml',
         sudo: true,
         credentialsId: credentials_id,
-        colorized: true
+        colorized: true,
+        extraVars: vars
     )
 }
 
