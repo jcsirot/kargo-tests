@@ -45,7 +45,7 @@ def run_tests(credentials_id, coreos=false) {
   vars = [:]
   if (coreos) {
     vars = [
-      ansible_python_interpreter: "/opt/bin/python"
+      ansible_python_interpreter: "/usr/bin/python,/usr/local/bin/python,/opt/bin/python"
     ]
   }
   test_apiserver(credentials_id, vars)
