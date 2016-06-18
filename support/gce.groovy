@@ -53,10 +53,14 @@ def run_tests(credentials_id, coreos=false) {
   vars = [:]
   if (coreos) {
     vars = [
-      ansible_python_interpreter: "/usr/bin/python,/usr/local/bin/python,/opt/bin/python"
+      ansible_python_interpreter: "/opt/bin/python"
     ]
   }
-  test_apiserver(credentials_id, vars)
+  if (! coreos) {
+    test_apiserver(credentials_id, vars)
+  } else {
+    echo "Skipping test_apiserver for CoreOS... (waiting for https://github.com/ansible/ansible/pull/11810)"
+  }
   test_create_pod(credentials_id, vars)
   test_network(credentials_id, vars)
 }
