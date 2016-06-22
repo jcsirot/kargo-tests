@@ -1,10 +1,12 @@
 ---
 - hosts: kube-node[0]
 
-  tasks:
+  vars:
+    kubectl_path: "/usr/local/bin/kubectl"
 
+  tasks:
   - name: Get pod names
-    shell: "/usr/local/bin/kubectl get pods -o json"
+    shell: "{{kubectl_path}} get pods -o json"
     register: pods
 
   - set_fact:
@@ -17,4 +19,4 @@
     with_items: "{{pod_ips}}"
 
   - name: Ping between pods is working
-    shell: "/usr/local/bin/kubectl exec {{pod_names[0]}} -- ping -c 4 {{ pod_ips[1] }}"
+    shell: "{{kubectl_path}} exec {{pod_names[0]}} -- ping -c 4 {{ pod_ips[1] }}"

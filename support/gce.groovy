@@ -53,7 +53,8 @@ def run_tests(credentials_id, coreos=false) {
   vars = [:]
   if (coreos) {
     vars = [
-      ansible_python_interpreter: "/opt/bin/python"
+      ansible_python_interpreter: "/opt/bin/python",
+      kubectl_path: "/opt/bin/kubectl"
     ]
   }
   if (! coreos) {

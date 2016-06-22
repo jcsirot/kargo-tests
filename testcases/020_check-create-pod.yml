@@ -1,12 +1,15 @@
 ---
 - hosts: kube-node[0]
 
+  vars:
+    kubectl_path: "/usr/local/bin/kubectl"
+
   tasks:
   - name: Run a replica controller composed of 2 pods
-    shell: "/usr/local/bin/kubectl run test --image=busybox --replicas=2 --command -- tail -f /dev/null"
+    shell: "{{kubectl_path}} run test --image=busybox --replicas=2 --command -- tail -f /dev/null"
 
   - name: Pods are running
-    shell: "/usr/local/bin/kubectl get pods --no-headers -o json"
+    shell: "{{kubectl_path}} get pods --no-headers -o json"
     register: run_pods_log
     until: [ '(run_pods_log.stdout | from_json)["items"] | map(attribute = "status.phase") | join(",") == "Running,Running"' ]
     retries: 24
