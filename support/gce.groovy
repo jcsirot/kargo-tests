@@ -43,10 +43,10 @@ def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
 def install_cluster(username, credentials_id, network_plugin, deploy_options=[:], coreos=false) {
   stage 'Deploy'
   coreosArg = coreos ? "--coreos" : ""
-  if (options.isEmpty()) {
+  if (deploy_options.isEmpty()) {
     extraArgs = ""
   } else {
-    extraArgs = "--ansible-opts=\"" deploy_options.collect { k,v -> "$k=$v" }.join(' ') + "\""
+    extraArgs = "--ansible-opts=\"" + deploy_options.collect { k,v -> "$k=$v" }.join(' ') + "\""
   }
   withCredentials([[$class: 'FileBinding', credentialsId: credentials_id, variable: 'SSH_KEY']]) {
     sh "kargo deploy -y --path kargo ${coreosArg} --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY} ${extraArgs}"
