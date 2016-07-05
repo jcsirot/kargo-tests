@@ -1,14 +1,14 @@
-def run_coreos(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin) {
-    run(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin, true)
+def run_coreos(username, credentials_id, project_id, service_account_email, gce_pem_id, image, deploy_options=[:], network_plugin) {
+    run(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin, deploy_options, true)
 }
 
-def run(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin, coreos=false) {
+def run(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin, deploy_options=[:], coreos=false) {
     def run_id = "${env.JOB_NAME}-${env.BUILD_NUMBER}"
     wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
         withEnv(['PYTHONUNBUFFERED=1']) {
             try {
                 create_vm(run_id, project_id, service_account_email, gce_pem_id, image)
-                install_cluster(username, credentials_id, network_plugin, coreos)
+                install_cluster(username, credentials_id, network_plugin, deploy_options, coreos)
                 run_tests(credentials_id, coreos)
             } finally {
                 delete_vm(run_id, project_id, service_account_email, gce_pem_id)
@@ -40,11 +40,16 @@ def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
     }
 }
 
-def install_cluster(username, credentials_id, network_plugin, coreos=false) {
+def install_cluster(username, credentials_id, network_plugin, deploy_options=[:], coreos=false) {
   stage 'Deploy'
   coreosArg = coreos ? "--coreos" : ""
+  if (options.isEmpty()) {
+    extraArgs = ""
+  } else {
+    extraArgs = "--ansible-opts=\"" deploy_options.collect { k,v -> "$k=$v" }.join(' ') + "\""
+  }
   withCredentials([[$class: 'FileBinding', credentialsId: credentials_id, variable: 'SSH_KEY']]) {
-    sh "kargo deploy -y --path kargo ${coreosArg} --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY}"
+    sh "kargo deploy -y --path kargo ${coreosArg} --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY} ${extraArgs}"
   }
 }
 
