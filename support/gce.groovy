@@ -1,4 +1,6 @@
-def run_coreos(username, credentials_id, project_id, service_account_email, gce_pem_id, image, deploy_options=[:], network_plugin) {
+import com.cloudbees.groovy.cps.NonCPS
+
+def run_coreos(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin, deploy_options=[:]) {
     run(username, credentials_id, project_id, service_account_email, gce_pem_id, image, network_plugin, deploy_options, true)
 }
 
@@ -43,14 +45,24 @@ def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
 def install_cluster(username, credentials_id, network_plugin, deploy_options=[:], coreos=false) {
   stage 'Deploy'
   coreosArg = coreos ? "--coreos" : ""
-  if (deploy_options.isEmpty()) {
-    extraArgs = ""
-  } else {
-    extraArgs = "--ansible-opts=\"" + deploy_options.collect { k,v -> "$k=$v" }.join(' ') + "\""
-  }
+  extraArgs = generate_extra_args(deploy_options);
+  echo extraArgs
   withCredentials([[$class: 'FileBinding', credentialsId: credentials_id, variable: 'SSH_KEY']]) {
-    sh "kargo deploy -y --path kargo ${coreosArg} --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY} ${extraArgs}"
+    if (extraArgs.isEmpty()) {
+      sh "kargo deploy -y --path kargo ${coreosArg} --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY}"
+    } else {
+      sh "kargo deploy -y --path kargo ${coreosArg} --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY} --ansible-opts \"${extraArgs}\""
+    }
   }
+}
+
+@NonCPS
+def generate_extra_args(deploy_options) {
+  extraArgs = ""
+  if (! deploy_options.isEmpty()) {
+    extraArgs = deploy_options.collect { k,v -> "-e $k=$v" }.join(' ')
+  }
+  return extraArgs
 }
 
 def run_tests(credentials_id, coreos=false) {
