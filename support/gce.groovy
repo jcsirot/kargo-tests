@@ -28,17 +28,21 @@ def create_vm(run_id, project_id, service_account_email, gce_pem_id, image) {
 
 def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
     stage 'Delete'
-    withCredentials([[$class: 'FileBinding', credentialsId: gce_pem_id, variable: 'GCE_PEM']]) {
-        ansiblePlaybook(
-            inventory: 'kargo/inventory/inventory.cfg',
-            playbook: 'playbooks/delete-gce.yml',
-            extraVars: [
-                gce_project_id: [value: project_id, hidden: true],
-                gce_service_account_email: [value: service_account_email, hidden: true],
-                gce_pem_file: "${env.GCE_PEM}",
-            ],
-            colorized: true
-        )
+    try {
+        withCredentials([[$class: 'FileBinding', credentialsId: gce_pem_id, variable: 'GCE_PEM']]) {
+            ansiblePlaybook(
+                inventory: 'kargo/inventory/inventory.cfg',
+                playbook: 'playbooks/delete-gce.yml',
+                extraVars: [
+                    gce_project_id: [value: project_id, hidden: true],
+                    gce_service_account_email: [value: service_account_email, hidden: true],
+                    gce_pem_file: "${env.GCE_PEM}",
+                ],
+                colorized: true
+            )
+        }
+    } catch (ex) {
+        error 'An unexpected error occurred when deleting the test VMs'
     }
 }
 
