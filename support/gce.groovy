@@ -45,12 +45,11 @@ def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
 def install_cluster(username, credentials_id, network_plugin, deploy_options=[:], coreos=false) {
   stage 'Deploy'
   coreosArg = coreos ? "--coreos" : ""
-  extraArgs = generate_extra_args(deploy_options);
-  echo extraArgs
   withCredentials([[$class: 'FileBinding', credentialsId: credentials_id, variable: 'SSH_KEY']]) {
-    if (extraArgs.isEmpty()) {
+    if (deploy_options.isEmpty()) {
       sh "kargo deploy -y --path kargo ${coreosArg} --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY}"
     } else {
+      extraArgs = generate_extra_args(deploy_options);
       sh "kargo deploy -y --path kargo ${coreosArg} --gce -n ${network_plugin} -u ${username} -k ${env.SSH_KEY} --ansible-opts \"${extraArgs}\""
     }
   }
@@ -58,11 +57,7 @@ def install_cluster(username, credentials_id, network_plugin, deploy_options=[:]
 
 @NonCPS
 def generate_extra_args(deploy_options) {
-  extraArgs = ""
-  if (! deploy_options.isEmpty()) {
-    extraArgs = deploy_options.collect { k,v -> "-e $k=$v" }.join(' ')
-  }
-  return extraArgs
+  return deploy_options.collect { k,v -> "-e $k=$v" }.join(' ')
 }
 
 def run_tests(credentials_id, coreos=false) {
