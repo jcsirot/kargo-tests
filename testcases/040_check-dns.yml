@@ -1,0 +1,29 @@
+---
+- hosts: kube-node[0]
+
+  vars:
+    kubectl_path: "/usr/local/bin/kubectl"
+
+  tasks:
+  - name: Run a pod with curl preinstalled
+    shell: "{{kubectl_path}} run dns --image=tutum/curl --labels='test=dns' --command -- tail -f /dev/null"
+
+  - name: Wait for pods running
+    shell: "{{kubectl_path}} get pods -l test=dns -o jsonpath={.items[0].status.phase}"
+    register: run_pods_log
+    until: run_pods_log.stdout == "Running"
+    retries: 24
+    delay: 5
+
+  - name: Get pod names
+    shell: "{{kubectl_path}} get pods -l test=dns -o json"
+    register: pods
+
+  - set_fact:
+      pod_names: "{{ (pods.stdout | from_json)['items'] | map(attribute = 'metadata.name') | list }}"
+
+  - name: Verify DNS resolution from pod for external domain
+    shell: "{{kubectl_path}} exec {{pod_names[0]}} -- curl http://kubernetes.io"
+
+  - name: Verify DNS resolution from pod for internal domain
+    shell: "{{kubectl_path}} exec {{pod_names[0]}} -- curl -k https://kubernetes.default.svc.cluster.local"

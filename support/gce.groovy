@@ -80,6 +80,7 @@ def run_tests(credentials_id, coreos=false) {
   }
   test_create_pod(credentials_id, vars)
   test_network(credentials_id, vars)
+  test_dns(credentials_id, vars)
 }
 
 def test_apiserver(credentials_id, vars) {
@@ -107,6 +108,17 @@ def test_network(credentials_id, vars) {
     ansiblePlaybook(
         inventory: 'kargo/inventory/inventory.cfg',
         playbook: 'testcases/030_check-network.yml',
+        sudo: true,
+        credentialsId: credentials_id,
+        colorized: true,
+        extraVars: vars
+    )
+}
+
+def test_dns(credentials_id, vars) {
+    ansiblePlaybook(
+        inventory: 'kargo/inventory/inventory.cfg',
+        playbook: 'testcases/040_check-dns.yml',
         sudo: true,
         credentialsId: credentials_id,
         colorized: true,
