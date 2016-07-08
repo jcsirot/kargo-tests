@@ -42,7 +42,7 @@ def delete_vm(run_id, project_id, service_account_email, gce_pem_id) {
             )
         }
     } catch (ex) {
-        error 'An unexpected error occurred when deleting the test VMs'
+        echo 'An unexpected error occurred when deleting the test VMs. Please look at https://console.cloud.google.com/'
     }
 }
 
