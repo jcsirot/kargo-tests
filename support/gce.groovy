@@ -22,7 +22,7 @@ def run(username, credentials_id, project_id, service_account_email, gce_pem_id,
 def create_vm(run_id, project_id, service_account_email, gce_pem_id, image) {
     stage 'Provision'
     withCredentials([[$class: 'FileBinding', credentialsId: gce_pem_id, variable: 'GCE_PEM']]) {
-        sh "kargo gce -y --noclone --path kargo --pem_file ${env.GCE_PEM} --email \"${service_account_email}\" --zone us-central1-a --type \"n1-standard-1\" --image \"${image}\" --project ${project_id} --tags ci --instances 3"
+        sh "kargo gce -y --noclone --path kargo --pem_file ${env.GCE_PEM} --email \"${service_account_email}\" --zone us-central1-a --image \"${image}\" --project ${project_id} --tags ci --nodes 3 --nodes-machine-type n1-standard-1"
     }
 }
 
